@@ -1,0 +1,45 @@
+body
+{
+    width   : 100%;
+    background-color : azure;
+}
+
+#wrapper
+{
+    width   : 90%;
+    margin  : 0 auto; 
+    background-color : white;
+}
+
+#headimg
+{
+    height : 100px;
+    background-color : pink;
+}
+
+#headnav
+{
+    height : 50px;
+    background-color : beige;
+}
+
+#headnav nav
+{
+    background-color :burlywood;
+    margin : 0 auto;
+}
+#headnav ui
+{
+    text-align: center;
+}
+
+#headnav ui li
+{
+    display: inline-block;
+    width :30%;
+}
+
+footer nav
+{
+    background-color : beige;
+}
