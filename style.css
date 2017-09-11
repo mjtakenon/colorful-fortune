@@ -39,6 +39,42 @@ body
     width :24%;
 }
 
+#content
+{
+}
+
+#info
+{
+    float:left;
+    background-color:blue;
+    width:30%;
+    height:500px;
+}
+
+#news
+{
+    float:left;
+    background-color:red;
+    height:500px;
+    width:40%;
+}
+
+#twitter
+{
+    float:right;
+    background-color:green;
+    width:30%;
+    height:500px;
+}
+
+.clear{
+    clear:both;
+}
+
+footer
+{
+}
+
 footer nav
 {
     background-color : beige;
