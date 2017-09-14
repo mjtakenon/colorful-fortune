@@ -19,7 +19,7 @@ body
 
 #headnav
 {
-    height : 50px;
+    height : 100px;
     background-color : beige;
 }
 
@@ -28,6 +28,7 @@ body
     background-color :burlywood;
     margin : 0 auto;
 }
+
 #headnav ui
 {
     text-align: center;
@@ -36,7 +37,13 @@ body
 #headnav ui li
 {
     display: inline-block;
-    width :24%;
+    width:25%;
+}
+
+#headnav ui li img.link
+{
+    width: 100%;
+    height: 100%;
 }
 
 #content
@@ -45,30 +52,31 @@ body
 
 #info
 {
-    float:left;
-    background-color:blue;
-    width:30%;
-    height:500px;
+    float: left;
+    background-color: blue;
+    width: 30%;
+    height: 500px;
 }
 
 #news
 {
-    float:left;
-    background-color:red;
-    height:500px;
-    width:40%;
+    float: left;
+    background-color: red;
+    height: 500px;
+    width: 40%;
 }
 
 #twitter
 {
-    float:right;
-    background-color:green;
-    width:30%;
-    height:500px;
+    float: right;
+    background-color: green;
+    width: 30%;
+    height: 500px;
 }
 
 .clear{
-    clear:both;
+    display: inline;
+    clear: both;
 }
 
 footer
