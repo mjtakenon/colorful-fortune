@@ -2,6 +2,7 @@ body
 {
     width   : 100%;
     background-color : azure;
+    font-family: "Sawarabi Mincho";
 }
 
 #wrapper
@@ -58,7 +59,7 @@ body
 {
     float: left;
     width: 30%;
-    height: 500px;
+    min-height: 500px;
 }
 
 #info img.haichizu
@@ -69,7 +70,7 @@ body
 #news
 {
     float: left;
-    height: 500px;
+    min-height: 500px;
     width: 40%;
 }
 
@@ -94,7 +95,20 @@ body
 {
     float: right;
     width: 30%;
-    height: 500px;
+    min-height: 500px;
+}
+
+#member
+{
+    min-height:500px;
+    width:20%;
+    float:left;
+    word-wrap: break-word;
+}
+
+#member img.icon
+{
+    width:100%;
 }
 
 .clear{
