@@ -4,55 +4,70 @@
     <head>
         <meta charset="utf-8"/>
         <title> Colorful Fortune </title>
-        <link rel="stylesheet" type="text/css" href="style.css">
+        <link rel="stylesheet" type="text/css" href="style2.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.1.2/css/bulma.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
         <script async src="http://platform.twitter.com/widgets.js" charset="utf-8"></script>
-        <link href="https://fonts.googleapis.com/earlyaccess/sawarabiMincho.css" rel="stylesheet" />
+        <!--<link href="https://fonts.googleapis.com/earlyaccess/sawarabiMincho.css" rel="stylesheet" />-->
     </head>
 
     <body>
         <div id="wrapper">
             <header>
-                <div id="headimg">
-                    <a href="index.html">
-                        <img src="img/logo.png" width="200px"/>
-                    </a>
-                </div>
-                <div id="headnav">
-                    <nav>
-                        <ui>
-                            <li><a href="index.html"><img class="link" src="img/topnews.png" alt="トップページ"/></a></li><li><a href="content.html"><img class="link" src="img/contents.png" alt="このサークルについて"/></a></li><li><a href="member.html"><img class="link" src="img/member.png" alt="メンバー紹介"/></a></li><li><a href="contact.html"><img class="link" src="img/contact.png" alt="連絡先"/></a></li>
-                        </ui>
-                    </nav>
-                </div>
+                <section class="level">
+                    <div class="level-left">
+                        <div id="headimg">
+                            <a href="index.html">
+                                <img src="img/logo.png" width="200px"/>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="level-right">
+                        <div class="level-item tabs">
+                            <ul>
+                                <li class="is-active"><a>Top</a></li>
+                                <li><a>Contents</a></li>
+                                <li><a>Works</a></li>
+                                <li><a>Contact</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="level-right"></div>
+                </section>
             </header>
 
-            <div class="clear"></div>
-
-            <div id="content">
-                <p>同人音楽サークル Colorful☆FortuneのWebページです。</p>
-
-                <div id="info">
-                    M3出します。ここです。<br>
-                    <img src="img/haichizu.gif" alt="配置図" class="haichizu"/>
+            <main class="columns">
+                <div class="submenu column is-3">
+                    <aside class="box">
+                            同人音楽サークル Colorful-FortuneのWebページです。
+                    </aside>
+                    <aside class="box menu">
+                        <p class="menu-label">
+                            更新履歴
+                        </p>
+                        <ul class="menu-list">
+                            <li><small><p class="date"> 2017/10/05 </p> </small><p class="desc"> 公開しました。</p></li>
+                            <li><small><p class="date"> 2017/9/14 </p> </small><p class="desc"> Webページ作成しました。</p></li>
+                        </ul>
+                    </aside>
                 </div>
-                <div id="news">
-                    <H2>更新情報</H2>
-                    <ul>
-                        <li><p class="date"> 2017/9/31 </p> <p class="desc"> 公開しました。</p></li>
-                        <li><p class="date"> 2017/9/14 </p> <p class="desc"> Webページ作成しました。</p></li>
-                    </ul>                    
+                <div class="column is-6">
+                    <div class="box">
+                        2017秋M3参加します。
+                        ケ-09yにて飲み物コンピ「Dream Taste」頒布予定です。
+                        よろしくお願いします。
+                        <img src="img/Dream Taste.png">
+                    </div>
                 </div>
-                <div id="twitter">
-                    <H2>Twitter</H2> 
+                <div class="column is-3">
                     <a class="twitter-timeline" data-width="300" data-height="400" data-theme="light" data-link-color="#f0ffff" href="https://twitter.com/mjtakenon">Tweets by mjtakenon</a>
                 </div>
-            </div>
-                <p> </p>
-            <div class="clear"></div>
-            <footer>
-                <p>🄫 2017 Coloful-Fortune</p>
-            </footer>
+            </main>
         </div>
+        <footer class="footer">
+            <div class="container">
+                🄫 2017 Coloful-Fortune
+            </div>
+        </footer>
     </body>
-
 </html>

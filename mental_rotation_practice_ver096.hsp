@@ -1,0 +1,395 @@
+;ver0.3 基本機能実装
+;ver0.4 マウスを消す；画面調整；フィラー提示改善
+;ver0.5 メニューと連動させる　各種変数を上部にまとめる; メニュー作成
+;mental_trotation_practice 練習用のプログラムを分ける
+;これは正誤判定やRTのフィードバックを含む（本番は含まない:位置をきちんと指定）
+;分割数は6、繰り返しは1回のみでデータも取得しないものとする
+;ver 0.7 最終的な正答率を表示する　低い場合には警告
+;ver0.8 待ち時間の微調整、最後スペースで終われるようにする
+;ver0.9 教示の追加
+;ver0.95 画面サイズ変更に伴う教示文表示の調
+;ver0.96 微修正
+
+;-----------------------------
+;コンパイルオプション
+
+#packopt name "mental_rotation_practice"
+#packopt type 1
+
+
+;外部ファイルのインクルード
+
+#include "array_shuffle.hsp"	;配列シャッフル用の自作関数
+#include "mod_counttimer.hsp"	;タイマーモジュール
+#include "hsp3util.as"			;ツール類
+#include "array_data_save.hsp"	;上記のモジュールを使った「配列→csv」変換の自作モジュール
+
+title "Mental Rotation (Practice)"
+
+;///////////////////////////////////////////
+;各種初期設定 ここを変更することでいろいろ変えられる
+
+gazou_file="./figs/f2.jpg"	;表示画像ファイル名 256x256のjpg画像であること
+gazou_file_pixel=256		;表示画像ファイルのピクセルの一辺の大きさ
+
+limit_ratio=0.75	;注意を喚起する最低限の正答率
+
+array_item_count=6		;配列の要素数（360度の分割の数）
+;array_item_count=1		;配列の要素数（360度の分割の数）for debug
+
+kurikaesi=1		;刺激の繰り返し提示回数
+
+waittime=100	;待ち時間
+;waittime=10		;待ち時間 for debug
+
+;初期設定ここまで
+;///////////////////////////////////////////
+
+normal_items=0	;変数初期化
+mirror_items=0	;同上
+
+total_count=0	;全データの個数カウンタ
+right_count=0	;正しいデータの個数カウンタ
+wrong_count=0	;誤りデータの個数カウンタ
+right_ratio=0	;正答率
+
+
+sdim time_dim_org,array_item_count*2	;提示順序どおりの時間格納文字列行列の設定
+sdim time_dim_sorted,array_item_count*2	;角度順に格納された時間格納文字列行列の設定
+sdim time_dim_sorted_sum,kurikaesi+1	;上記データ配列を追記していくバッファ(ガイドラインを足すので+1)
+
+
+;スクリーンの大きさをシステム変数から取得する
+;後の刺激の提示位置もそこから指定する
+
+x_size=ginfo_dispx:mes "x="+x_size
+y_size=ginfo_dispy:mes "y="+y_size
+;font_size=x_size*0.056
+font_size=x_size/18
+
+
+mes "font_size="+font_size
+;wait 100
+;stop
+
+
+screen 0,x_size,y_size,screen_tool,0,0
+cls 4
+
+;-----------------------------------
+;データファイルへのガイドライン書き出し（ファイルの冒頭に）
+
+sdim buftmp
+notesel buftmp
+repeat array_item_count
+	count=cnt
+;	mes count :; wait 30
+	normal_guide="n-"+(str((360/array_item_count)*count))+"deg";正立ガイド
+	mirror_guide="m-"+(str((360/array_item_count)*count))+"deg";鏡像ガイド
+	
+	buftmp(cnt)=normal_guide
+	buftmp(cnt+array_item_count)=mirror_guide
+
+loop	
+
+;mes "buftmp="+buftmp
+array_to_csv buftmp_csv,buftmp
+;mes "buftmp_csv="+buftmp_csv :wait 120
+;mes "guide="+guide_line: wait 150
+
+notesel total_data	;全体データの格納バッファの冒頭にガイドラインを書いておく
+noteadd buftmp_csv
+noteunsel
+
+;mes "totalガイド="+total_data
+
+;stop
+
+mouse -1,-1	;マウスカーソル消す
+
+;ここまで初期設定
+
+;------------------------------
+;--------初期教示の表示--------
+
+cls 4
+color 255,128,255
+font "MSゴシック",font_size,1
+pos x_size/8,y_size/6
+
+mes "メンタルローテーション実験（練習）"
+mes ""
+
+color 255,255,255
+font "MSゴシック",font_size,1
+;mes font_size
+
+pos_x=(x_size/2)-(font_size*8.5)
+;pos_x= (x_size-(font_size*25))/2+(font_size)/2
+pos_y=(y_size/2)-(2*font_size)
+; pos_y=(y_size-font_size)/2
+
+pos pos_x,pos_y
+ 
+font_size2=0.65*font_size
+
+font "MSゴシック",font_size2,1
+
+mes "これから画面に出てくる左右の画像が　　　　　　　　"
+mes "　　「同じ画像」だと判断したらマウスの[左]ボタンを"
+mes "　　「異なる画像」だと判断したらマウスの[右]ボタンを"
+mes "押してください　　　　　　　　　　　　　　　　　　"
+mes ""
+mes "　　　　[スペースキー]を押すと練習が始まります　　"
+mes ""
+mes ""
+mes "なお判断の際に[スペースキー]を押すと練習は中断します"
+
+repeat
+	stick key,0		;キー入力をチェック
+	if key&16 : break	;スペースキーが押されたら終わり
+	await 5			;
+loop				;キーが押されるまで繰り返される
+
+cls 4
+	font "ＭＳ ゴシック",2*font_size
+	pos x_size/2-(font_size*4),y_size/2-(font_size/2)
+	color 128,255,255
+	mes "練習開始" :wait waittime
+cls 4
+
+;----------初期教示終わり----------
+
+;///////////////////////////////////////////
+;----------------------------------
+;ここから下を繰り返し回数だけリピート
+
+repeat kurikaesi
+
+	global_cnt=cnt		;一番大きな繰り返し変数
+;	mes "#zentai kurikaesi="+global_cnt	;繰り返し回数の表示
+	wait 100
+
+;--------------------
+;表示配列の決定
+
+	randomize					;ランダムシード初期化
+
+	celload gazou_file,1					;仮想画面１に表示画像読み込み
+;	celdiv 1,256,256,128,128	;位置を決める
+	celdiv 1,gazou_file_pixel,gazou_file_pixel,gazou_file_pixel/2,gazou_file_pixel/2
+	
+	dim global_array,array_item_count*2	;配列を作って(正立と鏡像があるので2倍する)
+
+	foreach global_array			;0から順番に配列に値を入れて
+		global_array(cnt)=cnt
+	loop
+
+	array_shuffle global_array		;シャッフルして提示順序を決める
+									;array_shuffleは自作の外部関数
+
+;	ここまで初期動作
+;	----------------------
+;	ここから画像提示
+
+	make_timer timer,0		;タイマーを止めた状態で作成しておく
+
+	foreach global_array	;配列変数の個数分だけ以下loopまで繰り返し
+		cls 4			;黒く塗れ
+		p=global_array(cnt)		;配列の「値」を一時変数に格納（わかりやすくするため）
+		n=array_item_count		;配列の「個数」を一時変数に格納（同上）
+		position_correct=gazou_file_pixel/2	;画像ファイルの提示位置修正のための変数
+												;提示画像の一辺の長さの半分
+
+		color 255,255,255
+;		mes "回転角指標="+p: wait 10	;for debug
+		color 0,0,0
+
+		;---フィラーの提示
+	
+		gosub *filler_presentation	;フィラー提示ルーチンへ
+		wait rnd(waittime)+100	;	戻ってから1.0sec+乱数時間で待つ
+		cls 4
+
+		;---ここまで
+
+		;---ここから先の画面表示位置指定はましなルーチンに置き換えた
+	
+		pos (x_size*1/4),y_size/2	;左画像提示の位置決め　なぜかこの数値でうまく表示できる(上のceldivで中心を決めているためではないか)
+		celput 1	;標準画像提示
+	
+		pos (x_size*3/4),y_size/2	;右画像提示の位置決め　同上
+	
+		;ここから比較画像の回転条件を判別して表示する
+		if p<array_item_count	{		;数が前半の場合には
+			celput 1,0,1,1,((m_pi*2)/n)*p	;正立画像表示, m_piは固定変数(円周率)
+			color 255,255,255
+;			pos 10,10
+;			mes "normal,"+p
+			presentation="normal"
+;			normal_items=normal_items+1 :mes "normal_sum="+normal_items
+		;wait 100
+			} else {								;そうでなければ
+			celput 1,0,-1,1,((m_pi*2)/n)*(p-array_item_count)	;鏡像画像表示（第３引数が-1だと鏡像表示になる）
+			color 255,255,255
+;			pos 10,10
+;			mes "mirror,"+p
+			presentation="mirror"
+;			mirror_items=mirror_items+1 : mes "mirror_sum="+mirror_items
+		;wait 100	
+			}
+	
+		;---------------------------
+		;反応時間計測開始
+
+		reset_count timer	;タイマー初期化
+		resume_count timer	;タイマー計測開始
+
+		repeat
+			stick key,0		;キー入力をチェック
+			if key&16 : goto *ending	;スペースキーが押されたら終わり
+			if key&256: judge="normal": break ;マウス左ボタン
+			if key&512: judge="mirror": break ;マウス右ボタン
+			await 0			;
+		loop				;キーが押されるまで繰り返される
+
+		;-----時間データ取得------
+		get_count timer	;時間データ取得
+		time=int(refdval)	;ミリ秒単位なので整数化して変数に格納
+		time_dim_org(cnt)=str(time)	;提示順序でデータ格納
+;		mes time_dim_org(cnt)
+		time_dim_sorted(p)=str(time)	;回転角度に応じた場所にデータを入れる
+	
+		total_count=total_count+1	;個数カウンタに計上
+
+		;--------正誤判定------
+		pos x_size/2-100,y_size/2+120
+		font "MSゴシック",32,1
+;		mes "判断="+judge
+		if presentation==judge {
+			mes "判断＝○"
+			right_count=right_count+1	;正答カウンタ}
+		else {mes "判断＝×"
+		wrong_count=wrong_count+1	;誤答カウンタ
+		}
+	
+		mes "反応時間="+time+"ms" :wait 100
+
+		;---------------------------
+
+		reset_count timer	;タイマーを0に
+
+  	loop
+	;---------------------------
+	;ここまで提示回数分繰り返す
+
+	;データファイルを蓄積する
+
+	array_to_csv time_line_data_sorted,time_dim_sorted	;得られた配列データをcsv化
+;	mes "ソート済みの時間配列="+time_line_data_sorted	;for debug
+
+;	wait waittime
+
+; 	notesel time_dim_sorted_sum
+;	time_dim_sorted_sum(global_cnt+1)=time_line_data_sorted	;csv化したデータを
+	;繰り返しごとの配列に格納する
+	notesel total_data				;全体データの格納バッファ
+	noteadd time_line_data_sorted	;そこにcsv化したデータを追加していく
+	noteunsel
+loop
+;ここまで全体の繰り返し回数分繰り返す
+
+;mes "total_data="+total_data	:wait 150
+
+;stop
+
+;gosub *file_write
+
+;------------------
+
+*ending
+	cls 4
+	color 255,255,255
+	font "ＭＳ ゴシック",font_size
+
+;	pos (x_size/3)+(font_size*2),y_size/10
+	pos (x_size/2)-(font_size*4),(y_size/2)-(font_size*5)
+
+	mes "回答数＝"+total_count
+	mes "正答数＝"+right_count
+	mes "誤答数＝"+wrong_count
+
+	right_ratio=double(right_count)/double(total_count)
+	mes "正答率＝"+right_ratio
+	if right_ratio <limit_ratio: color 255,128,128: mes "正答率が低いです"
+	
+;	cls 4
+	font "ＭＳ ゴシック",font_size
+;	pos x_size/2-128*2,y_size/2+40
+	pos x_size/2-(font_size*2),y_size/2+font_size
+	color 128,255,255
+	mes "練習終了"
+	
+	mouse	
+	
+	font "ＭＳ ゴシック",0.67*font_size
+	mes ""
+	color 255,255,255
+	pos (x_size/2)-(0.67*font_size)*8, (y_size/4)*3
+	mes "なお本番の実験では正答・誤答や"
+	mes "反応時間のフィードバックはありません"
+	mes "判断する図形も別なものになります"
+
+repeat
+	stick key,0		;キー入力をチェック
+	if key&16 : break	;スペースキーが押されたら終わり
+	await 5			;
+loop				;キーが押されるまで繰り返される
+
+end
+
+;-----------------------
+;フィラー描画ルーチン
+
+*filler_presentation
+
+x=ginfo_dispx
+y=ginfo_dispy
+color 250,250,250
+;mes "x="+x+" y="+y
+
+wait waittime
+;wait 100
+
+r1=10	;注視点の円の半径
+r2=128	;刺激提示位置のフィラーの半径＆提示刺激の一辺の長さの半分(256pixの正方形となる）
+
+;screen 0,x,y,screen_fixedsize,0,0
+
+cls 4
+
+color 255,20,20
+circle x/2-r1,y/2-r1,x/2+r1,y/2+r1	;中心に半径r1の円を描く
+
+color 200,200,200
+circle (x*1/4)-r2,y/2-r2,(x*1/4)+r2,y/2+r2	;丸いフィラーを描く
+circle (x*3/4)-r2,y/2-r2,(x*3/4)+r2,y/2+r2	;丸いフィラーを描く
+
+;boxf (x*1/4)-r2,y/2-r2,(x*1/4)+r2,y/2+r2	;四角いフィラーを描く
+;boxf (x*3/4)-r2,y/2-r2,(x*3/4)+r2,y/2+r2	;四角いフィラーを描く
+
+;あるいはフィラーはフィラー画像を表示するというルーチンでも
+;よいかもしれない(市松模様が可能になる)
+
+;filler_file="./figs/fillers.bmp"
+;celload filler_file,2	;仮想画面２にファイルをロード
+;celdiv 2,gazou_file_pixel,gazou_file_pixel,gazou_file_pixel/2,gazou_file_pixel/2	;表示中心を画像の中央に指定
+;pos (x*1/4),y/2
+;celput 2
+;pos (x*3/4),y/2
+;celput 2
+
+return
+;---------------------ここまで
+
+
